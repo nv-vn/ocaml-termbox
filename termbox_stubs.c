@@ -1,5 +1,7 @@
 #define CAML_NAME_SPACE
 
+#include <stdio.h>
+
 #include <string.h>
 
 #include <termbox.h>
@@ -17,7 +19,7 @@
 
 
 CAMLprim value tbstub_init() {
-
+	tb_select_input_mode(TB_INPUT_ALT);
 	return Val_int(tb_init());
 }
 
@@ -122,6 +124,19 @@ CAMLprim value tbstub_poll_event() {
 			caml_ch = caml_copy_int32(e.ch);
 			Store_field(caml_e, 0, caml_ch);
 		}
+
+		if (e.mod != 0) {
+			if (e.ch == 0 && e.key > 0xFF) {
+				caml_size = caml_alloc(1, 0);
+				Store_field(caml_size, 0, Val_int(0xFFFF - e.key));
+			} else if( e.ch <= 0xFF ) {
+				caml_size = caml_alloc(1, 1);
+				Store_field(caml_size, 0, Val_int(e.ch | e.key));
+			}
+			caml_e = caml_alloc(1, 3);
+			Store_field(caml_e, 0, caml_size);
+		}
+
 	}
 	// Resize
 	else {
@@ -129,7 +144,7 @@ CAMLprim value tbstub_poll_event() {
 		Store_field(caml_size, 0, Val_int(e.w));
 		Store_field(caml_size, 1, Val_int(e.h));
 
-		caml_e = caml_alloc(1, 3);
+		caml_e = caml_alloc(1, 4);
 		Store_field(caml_e, 0, caml_size);
 	}
 

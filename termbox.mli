@@ -53,8 +53,8 @@ type event =
   | Key of key
   | Ascii of char
   | Utf8 of int32
+  | Mod of event
   | Resize of int * int
-
 
 val init : unit -> int
 val shutdown : unit -> unit
